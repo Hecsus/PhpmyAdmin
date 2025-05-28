@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 27-05-2025 a las 22:51:14
+-- Tiempo de generación: 28-05-2025 a las 22:49:31
 -- Versión del servidor: 10.4.32-MariaDB
 -- Versión de PHP: 8.2.12
 
@@ -33,6 +33,14 @@ CREATE TABLE `devolucion` (
   `fk_id_prestamo` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Volcado de datos para la tabla `devolucion`
+--
+
+INSERT INTO `devolucion` (`id_devolucion`, `f_real`, `fk_id_prestamo`) VALUES
+(1, '2025-05-14', 1),
+(2, '2025-05-05', 2);
+
 -- --------------------------------------------------------
 
 --
@@ -43,6 +51,16 @@ CREATE TABLE `incluye` (
   `fk_id_prestamo` int(11) NOT NULL,
   `fk_cod_libro` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `incluye`
+--
+
+INSERT INTO `incluye` (`fk_id_prestamo`, `fk_cod_libro`) VALUES
+(1, 1),
+(3, 2),
+(1, 3),
+(2, 4);
 
 -- --------------------------------------------------------
 
@@ -59,6 +77,16 @@ CREATE TABLE `libro` (
   `categoria` varchar(30) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Volcado de datos para la tabla `libro`
+--
+
+INSERT INTO `libro` (`cod_libro`, `titulo`, `autor`, `editorial`, `publicacion`, `categoria`) VALUES
+(1, 'El Principito', 'Antoine de Saint-Exupéry', 'Reynal & Hitchcock', 1943, 'Infantil'),
+(2, 'Cuentos para pensar', 'Jorge Bucay', 'RBA', 2003, 'Infantil'),
+(3, '1984', 'George Orwell', 'Secker & Warburg', 1949, 'Novela'),
+(4, 'Clean Code', 'Robert C. Martin', 'Prentice Hall', 2008, 'Técnica');
+
 -- --------------------------------------------------------
 
 --
@@ -69,9 +97,17 @@ CREATE TABLE `multa` (
   `id_multa` int(11) NOT NULL,
   `monto` decimal(6,2) NOT NULL,
   `descripcion` text NOT NULL,
-  `f_eamision` date NOT NULL,
+  `f_emision` date NOT NULL,
   `fk_id_devolucion` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `multa`
+--
+
+INSERT INTO `multa` (`id_multa`, `monto`, `descripcion`, `f_emision`, `fk_id_devolucion`) VALUES
+(1, 5.00, 'Retraso de un día', '2025-05-06', 2),
+(2, 12.00, 'Retraso adicional', '2025-05-07', 2);
 
 -- --------------------------------------------------------
 
@@ -86,6 +122,15 @@ CREATE TABLE `prestamo` (
   `fk_num_socio` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Volcado de datos para la tabla `prestamo`
+--
+
+INSERT INTO `prestamo` (`id_prestamo`, `f_prestamo`, `f_limite`, `fk_num_socio`) VALUES
+(1, '2025-05-01', '2025-05-15', 1),
+(2, '2025-04-20', '2025-05-04', 2),
+(3, '2025-05-10', '2025-05-24', 3);
+
 -- --------------------------------------------------------
 
 --
@@ -99,6 +144,15 @@ CREATE TABLE `socio` (
   `correo` varchar(50) NOT NULL,
   `f_inscripcion` date NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `socio`
+--
+
+INSERT INTO `socio` (`num_socio`, `nombre_com`, `direccion`, `correo`, `f_inscripcion`) VALUES
+(1, 'Ana Pérez', 'Calle Sol 23', 'ana@gmail.com', '2023-03-15'),
+(2, 'Luis Gómez', 'Avenida Luna 10', 'luis@gmail.com', '2022-11-10'),
+(3, 'Marta Ruiz', 'Plaza Mayor 5', 'marta@gmail.com', '2023-07-01');
 
 --
 -- Índices para tablas volcadas
@@ -129,14 +183,14 @@ ALTER TABLE `libro`
 --
 ALTER TABLE `multa`
   ADD PRIMARY KEY (`id_multa`),
-  ADD UNIQUE KEY `id_devolucion` (`fk_id_devolucion`);
+  ADD KEY `Fk_id_devoluciones` (`fk_id_devolucion`);
 
 --
 -- Indices de la tabla `prestamo`
 --
 ALTER TABLE `prestamo`
   ADD PRIMARY KEY (`id_prestamo`),
-  ADD KEY `num_socio` (`fk_num_socio`);
+  ADD KEY `Fk_Prestamo` (`fk_num_socio`);
 
 --
 -- Indices de la tabla `socio`
@@ -152,19 +206,19 @@ ALTER TABLE `socio`
 -- AUTO_INCREMENT de la tabla `multa`
 --
 ALTER TABLE `multa`
-  MODIFY `id_multa` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id_multa` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT de la tabla `prestamo`
 --
 ALTER TABLE `prestamo`
-  MODIFY `id_prestamo` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id_prestamo` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT de la tabla `socio`
 --
 ALTER TABLE `socio`
-  MODIFY `num_socio` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `num_socio` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- Restricciones para tablas volcadas
@@ -187,13 +241,13 @@ ALTER TABLE `incluye`
 -- Filtros para la tabla `multa`
 --
 ALTER TABLE `multa`
-  ADD CONSTRAINT `multa_ibfk_1` FOREIGN KEY (`fk_id_devolucion`) REFERENCES `devolucion` (`id_devolucion`) ON DELETE CASCADE ON UPDATE CASCADE;
+  ADD CONSTRAINT `Fk_id_devoluciones` FOREIGN KEY (`fk_id_devolucion`) REFERENCES `devolucion` (`id_devolucion`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
--- Filtros para la tabla `socio`
+-- Filtros para la tabla `prestamo`
 --
-ALTER TABLE `socio`
-  ADD CONSTRAINT `socio_ibfk_1` FOREIGN KEY (`num_socio`) REFERENCES `prestamo` (`fk_num_socio`) ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE `prestamo`
+  ADD CONSTRAINT `Fk_Prestamo` FOREIGN KEY (`fk_num_socio`) REFERENCES `socio` (`num_socio`);
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

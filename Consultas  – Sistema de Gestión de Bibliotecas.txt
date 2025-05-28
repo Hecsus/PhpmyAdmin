@@ -1,0 +1,109 @@
+Consultas  – Sistema de Gestión de Bibliotecas
+
+Estas consultas han sido generadas con el apoyo de herramientas de inteligencia artificial.
+
+1. Lista todos los libros de la categoría 'Infantil' ordenados por título.
+
+SELECT 
+  cod_libro AS 'Código del libro',
+  titulo AS 'Título',
+  autor AS 'Autor',
+  editorial AS 'Editorial',
+  publicacion AS 'Año de publicación',
+  categoria AS 'Categoría'
+FROM libro
+WHERE categoria = 'Infantil'
+ORDER BY titulo;
+
+2. Muestra los datos de los socios que se registraron en 2023.
+
+SELECT 
+  num_socio AS 'ID del socio',
+  nombre_com AS 'Nombre del socio',
+  direccion AS 'Dirección',
+  correo AS 'Correo electrónico',
+  f_inscripcion AS 'Fecha de inscripción'
+FROM socio
+WHERE YEAR(f_inscripcion) = 2023;
+
+3. Obtén el título de todos los libros que han sido prestados alguna vez.
+
+SELECT DISTINCT 
+  l.titulo AS 'Título del libro'
+FROM libro l
+JOIN incluye i ON l.cod_libro = i.fk_cod_libro;
+
+4. Muestra el nombre del socio y el título del libro que ha devuelto más recientemente.
+
+SELECT 
+  s.nombre_com AS 'Nombre del socio',
+  l.titulo AS 'Título del libro'
+FROM devolucion d
+JOIN prestamo p ON d.fk_id_prestamo = p.id_prestamo
+JOIN socio s ON p.fk_num_socio = s.num_socio
+JOIN incluye i ON p.id_prestamo = i.fk_id_prestamo
+JOIN libro l ON i.fk_cod_libro = l.cod_libro
+WHERE d.f_real = (SELECT MAX(f_real) FROM devolucion);
+
+5. Lista los socios que actualmente tienen libros sin devolver (es decir, fecha_devolucion_real IS NULL).
+
+SELECT DISTINCT 
+  s.nombre_com AS 'Nombre del socio'
+FROM prestamo p
+JOIN socio s ON p.fk_num_socio = s.num_socio
+LEFT JOIN devolucion d ON p.id_prestamo = d.fk_id_prestamo
+WHERE d.f_real IS NULL;
+
+6. Cuenta cuántos préstamos se han hecho por cada categoría de libro.
+
+SELECT 
+  l.categoria AS 'Categoría',
+  COUNT(*) AS 'Número de préstamos'
+FROM incluye i
+JOIN libro l ON i.fk_cod_libro = l.cod_libro
+GROUP BY l.categoria;
+
+7. Muestra todos los préstamos vencidos, es decir, cuya fecha_limite_devolucion es menor que la fecha de hoy y aún no se han devuelto.
+Nota: Se muestra también el nombre del socio.
+
+SELECT 
+  s.nombre_com AS 'Nombre del socio',
+  p.id_prestamo AS 'ID del préstamo',
+  p.f_prestamo AS 'Fecha del préstamo',
+  p.f_limite AS 'Fecha límite de devolución'
+FROM prestamo p
+JOIN socio s ON p.fk_num_socio = s.num_socio
+LEFT JOIN devolucion d ON p.id_prestamo = d.fk_id_prestamo
+WHERE d.f_real IS NULL AND p.f_limite < CURDATE();
+
+8. Calcula el total de multas acumuladas por cada socio.
+
+SELECT 
+  s.nombre_com AS 'Nombre del socio',
+  SUM(m.monto) AS 'Total de multas (€)'
+FROM multa m
+JOIN devolucion d ON m.fk_id_devolucion = d.id_devolucion
+JOIN prestamo p ON d.fk_id_prestamo = p.id_prestamo
+JOIN socio s ON p.fk_num_socio = s.num_socio
+GROUP BY s.nombre_com;
+
+9. Lista los títulos de libros con más de 5 préstamos en total.
+
+SELECT 
+  l.titulo AS 'Título del libro',
+  COUNT(*) AS 'Número de préstamos'
+FROM incluye i
+JOIN libro l ON i.fk_cod_libro = l.cod_libro
+GROUP BY l.titulo
+HAVING COUNT(*) > 5;
+
+10. Muestra los socios que han recibido alguna multa mayor a 10€ y la descripción de dicha multa.
+
+SELECT 
+  s.nombre_com AS 'Nombre del socio',
+  m.descripcion AS 'Motivo de la multa'
+FROM multa m
+JOIN devolucion d ON m.fk_id_devolucion = d.id_devolucion
+JOIN prestamo p ON d.fk_id_prestamo = p.id_prestamo
+JOIN socio s ON p.fk_num_socio = s.num_socio
+WHERE m.monto > 10;
