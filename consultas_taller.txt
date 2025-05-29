@@ -1,0 +1,76 @@
+
+1. Lista los vehículos con sus datos y el nombre de su cliente.
+---------------------------------------------------------------
+SELECT v.*, c.nombre AS cliente
+FROM Vehiculo v
+JOIN Cliente c ON v.id_cliente = c.id_cliente;
+
+2. Servicios realizados a un vehículo por patente.
+--------------------------------------------------
+SELECT s.*
+FROM Servicio s
+JOIN Vehiculo v ON s.id_vehiculo = v.id_vehiculo
+WHERE v.patente = 'ABC123';
+
+3. Total gastado por cada cliente en servicios.
+-----------------------------------------------
+SELECT c.nombre, SUM(s.coste) AS total_gastado
+FROM Cliente c
+JOIN Vehiculo v ON c.id_cliente = v.id_cliente
+JOIN Servicio s ON v.id_vehiculo = s.id_vehiculo
+GROUP BY c.id_cliente;
+
+4. Servicios donde se usaron más de 3 repuestos distintos.
+-----------------------------------------------------------
+SELECT id_servicio
+FROM Utiliza
+GROUP BY id_servicio
+HAVING COUNT(*) > 3;
+
+5. Mecánicos que trabajaron en servicios de 2024.
+-------------------------------------------------
+SELECT DISTINCT m.nombre
+FROM Servicio s
+JOIN Realiza r ON s.id_servicio = r.id_servicio
+JOIN Mecanico m ON r.id_mecanico = m.id_mecanico
+WHERE YEAR(s.fecha) = 2024;
+
+6. Costo total de repuestos en un servicio.
+-------------------------------------------
+SELECT s.id_servicio, SUM(r.precio * u.cantidad_utilizada) AS total_repuestos
+FROM Servicio s
+JOIN Utiliza u ON s.id_servicio = u.id_servicio
+JOIN Repuesto r ON u.id_repuesto = r.id_repuesto
+WHERE s.id_servicio = 1
+GROUP BY s.id_servicio;
+
+7. Repuestos usados en más de 5 servicios distintos.
+-----------------------------------------------------
+SELECT r.nombre
+FROM Utiliza u
+JOIN Repuesto r ON u.id_repuesto = r.id_repuesto
+GROUP BY u.id_repuesto
+HAVING COUNT(DISTINCT u.id_servicio) > 5;
+
+8. Vehículos sin servicios.
+----------------------------
+SELECT v.*
+FROM Vehiculo v
+LEFT JOIN Servicio s ON v.id_vehiculo = s.id_vehiculo
+WHERE s.id_servicio IS NULL;
+
+9. Clientes con más de un vehículo.
+-----------------------------------
+SELECT c.nombre
+FROM Cliente c
+JOIN Vehiculo v ON c.id_cliente = v.id_cliente
+GROUP BY c.id_cliente
+HAVING COUNT(*) > 1;
+
+10. Cantidad total de repuestos usados por cada mecánico.
+----------------------------------------------------------
+SELECT m.nombre, SUM(u.cantidad_utilizada) AS total_repuestos
+FROM Realiza r
+JOIN Mecanico m ON r.id_mecanico = m.id_mecanico
+JOIN Utiliza u ON r.id_servicio = u.id_servicio
+GROUP BY m.id_mecanico;
